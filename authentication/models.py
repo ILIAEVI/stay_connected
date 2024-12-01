@@ -50,6 +50,8 @@ class Profile(models.Model):
     bio = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to=generate_image_path, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
+    score = models.PositiveIntegerField(default=0)
+    total_answers = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.user.email
