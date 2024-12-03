@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from stay_connected.swagger import schema_view
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,7 +25,7 @@ urlpatterns = [
     path('api/auth/', include('authentication.urls')),
     path('api/forum/', include('forum.urls')),
 
-]
+] + debug_toolbar_urls()
 
 urlpatterns += [
     path('api-auth/', include('rest_framework.urls')),

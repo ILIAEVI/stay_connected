@@ -8,6 +8,32 @@ from authentication.models import User, Profile
 from authentication.utils import generate_email_verification_token, send_verification_email, send_password_reset_email
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email']
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'email', 'bio', 'image', 'score', 'total_answers']
+        extra_kwargs = {
+            'score': {'read_only': True},
+            'total_answers': {'read_only': True},
+        }
+
+
+class LeaderBoardSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'email', 'score', 'total_answers']
+
+
 class SignupSerializer(serializers.ModelSerializer):
     password_2 = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
 

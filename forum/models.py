@@ -1,6 +1,6 @@
-from django.db import models
-from django.db.models import F
-from rest_framework.exceptions import ValidationError
+from django.db import models, transaction
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 from authentication.models import User, Profile
 
 
@@ -32,15 +32,19 @@ class Answer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, *args, **kwargs):
 
-        if self.is_accepted and self.is_rejected:
-            raise ValidationError("An answer cannot be both accepted and rejected.")
+@receiver(post_save, sender=Answer)
+def update_answer_count_on_save(sender, instance, created, **kwargs):
+    if created:
+        with transaction.atomic():
+            profile = instance.user.profile
+            profile.total_answers += 1
+            profile.save()
 
-        super().save(*args, **kwargs)
 
-        if not self.pk:
-            Profile.objects.filter(user=self.user).update(total_answers=F('total_answers') + 1)
-
-        if self.is_accepted:
-            Profile.objects.filter(user=self.user).update(score=F('score') + 1)
+@receiver(post_delete, sender=Answer)
+def update_answer_count_on_delete(sender, instance, **kwargs):
+    with transaction.atomic():
+        profile = instance.user.profile
+        profile.total_answers -= 1
+        profile.save()

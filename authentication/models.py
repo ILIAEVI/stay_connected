@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import validate_email
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from authentication.utils import generate_image_path
 
 
@@ -55,3 +57,9 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.email
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)

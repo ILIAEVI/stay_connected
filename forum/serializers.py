@@ -1,7 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
 from forum.models import Post, Answer, Tag
-from authentication.models import User, Profile
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -57,13 +56,28 @@ class PostSerializer(serializers.ModelSerializer):
         instance.tags.set(all_tags)
 
 
-
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
-        fields = ['id', 'body', 'created_at', 'is_accepted', 'is_rejected']
+        fields = ['id', 'user', 'body', 'created_at', 'is_accepted', 'is_rejected']
         extra_kwargs = {
+            'user': {'read_only': True},
             'created_at': {'read_only': True},
             'is_accepted': {'read_only': True},
             'is_rejected': {'read_only': True},
         }
+
+
+class AnswerMarkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = ['is_accepted', 'is_rejected']
+
+    def validate(self, attrs):
+        is_accepted = attrs.get('is_accepted')
+        is_rejected = attrs.get('is_rejected')
+
+        if is_accepted and is_rejected:
+            raise serializers.ValidationError('"An answer cannot be both accepted and rejected."')
+
+        return attrs

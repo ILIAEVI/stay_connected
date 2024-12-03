@@ -1,15 +1,33 @@
 from django.contrib.auth import authenticate
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics, permissions, mixins
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.authentication import AUTH_HEADER_TYPES
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from authentication.serializers import SignupSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer, \
-    LoginSerializer, LogoutSerializer, RefreshTokenSerializer
-from authentication.models import User
+    LoginSerializer, LogoutSerializer, RefreshTokenSerializer, ProfileSerializer, LeaderBoardSerializer
+from authentication.models import User, Profile
 from authentication.permissions import NotAuthenticated
+from authentication.permissions import IsProfileOwnerOrReadOnly
+
+
+class ProfileView(mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.ListModelMixin,
+                  GenericViewSet):
+    queryset = Profile.objects.all().select_related('user')
+    serializer_class = ProfileSerializer
+    permission_classes = [IsProfileOwnerOrReadOnly]
+
+
+class LeaderboardView(mixins.ListModelMixin, GenericViewSet):
+    serializer_class = LeaderBoardSerializer
+
+    def get_queryset(self):
+        return Profile.objects.select_related('user').order_by('-score')[:10]
 
 
 class SignupView(generics.CreateAPIView):
