@@ -28,7 +28,6 @@ class Answer(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="answers")
     body = models.TextField()
     is_accepted = models.BooleanField(default=False)
-    is_rejected = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

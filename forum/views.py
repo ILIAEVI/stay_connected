@@ -1,17 +1,20 @@
-from django.db import connection
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from forum.filters import PostFilter, AnswerFilter
 from forum.models import Post, Answer
-from forum.permissions import CanMarkAnswer, IsAnswerAuthorOrPostOwner, IsPostOwnerOrReadOnly
+from forum.permissions import CanMarkAnswer, IsAnswerAuthorOrPostOwner, IsPostOwnerOrReadOnly, IsAuthenticatedOrReadOnly
 from forum.serializers import PostSerializer, AnswerSerializer, AnswerMarkSerializer
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().prefetch_related('tags').select_related('user')
     serializer_class = PostSerializer
-    permission_classes = [IsPostOwnerOrReadOnly]
+    permission_classes = [IsPostOwnerOrReadOnly, IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PostFilter
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -19,7 +22,9 @@ class PostViewSet(viewsets.ModelViewSet):
 
 class AnswerViewSet(viewsets.ModelViewSet):
     serializer_class = AnswerSerializer
-    permission_classes = [IsAnswerAuthorOrPostOwner]
+    permission_classes = [IsAnswerAuthorOrPostOwner, IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = AnswerFilter
 
     def perform_create(self, serializer):
         post_pk = self.kwargs.get('post_pk')
@@ -38,7 +43,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
         methods=['PATCH'],
         url_path='mark-answer',
         url_name='mark-answer',
-        permission_classes=[CanMarkAnswer],
+        permission_classes=[CanMarkAnswer, IsAuthenticatedOrReadOnly],
         serializer_class=AnswerMarkSerializer
     )
     def mark_answer(self, request, pk=None, post_pk=None):

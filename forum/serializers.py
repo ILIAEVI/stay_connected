@@ -59,25 +59,23 @@ class PostSerializer(serializers.ModelSerializer):
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
-        fields = ['id', 'user', 'body', 'created_at', 'is_accepted', 'is_rejected']
+        fields = ['id', 'user', 'body', 'created_at', 'is_accepted']
         extra_kwargs = {
             'user': {'read_only': True},
             'created_at': {'read_only': True},
             'is_accepted': {'read_only': True},
-            'is_rejected': {'read_only': True},
         }
 
 
 class AnswerMarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
-        fields = ['is_accepted', 'is_rejected']
+        fields = ['is_accepted']
+
 
     def validate(self, attrs):
-        is_accepted = attrs.get('is_accepted')
-        is_rejected = attrs.get('is_rejected')
-
-        if is_accepted and is_rejected:
-            raise serializers.ValidationError('"An answer cannot be both accepted and rejected."')
-
+        if attrs.get('is_accepted', False):
+            answer = self.instance
+            if Answer.objects.filter(post=answer.post, is_accepted=True).exclude(pk=answer.pk).exists():
+                raise serializers.ValidationError("Another answer is already marked as accepted for this post.")
         return attrs
