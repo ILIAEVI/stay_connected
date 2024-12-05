@@ -13,8 +13,6 @@ COPY ./requirements.txt /opt/services/djangoapp/src/requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install gunicorn
-
 COPY . /opt/services/djangoapp/src/
 
 EXPOSE 8000
