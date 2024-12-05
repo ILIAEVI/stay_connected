@@ -5,11 +5,12 @@ from authentication import views
 
 router = DefaultRouter()
 
-router.register('profile', views.ProfileView, basename='profile')
+router.register('profiles', views.ProfileView, basename='profiles')
 router.register('leaderboard', views.LeaderboardView, basename='leaderboard')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('login/', views.LoginView.as_view(), name='login'),
     path('refresh_token/', views.RefreshTokenView.as_view(), name='token_refresh'),
     path('logout/', views.LogoutView.as_view(), name='logout'),

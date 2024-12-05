@@ -12,6 +12,7 @@ from authentication.serializers import SignupSerializer, PasswordResetSerializer
 from authentication.models import User, Profile
 from authentication.permissions import NotAuthenticated
 from authentication.permissions import IsProfileOwnerOrReadOnly
+from forum.permissions import IsAuthenticatedOrReadOnly
 
 
 class ProfileView(mixins.RetrieveModelMixin,
@@ -20,7 +21,16 @@ class ProfileView(mixins.RetrieveModelMixin,
                   GenericViewSet):
     queryset = Profile.objects.all().select_related('user')
     serializer_class = ProfileSerializer
-    permission_classes = [IsProfileOwnerOrReadOnly]
+    permission_classes = [IsProfileOwnerOrReadOnly, IsAuthenticatedOrReadOnly]
+
+
+class UserProfileView(generics.RetrieveAPIView):
+    queryset = Profile.objects.all().select_related('user')
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return Profile.objects.get(user=self.request.user)
 
 
 class LeaderboardView(mixins.ListModelMixin, GenericViewSet):
