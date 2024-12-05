@@ -32,6 +32,26 @@ class Answer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+class Like(models.Model):
+    LIKE = 1
+    DISLIKE = -1
+
+    class Value(models.TextChoices):
+        LIKE = 'like', 'Like'
+        DISLIKE = 'dislike', 'Dislike'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes_dislikes')
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='likes_dislikes')
+    value = models.CharField(max_length=7, choices=Value.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'answer')
+
+
+
+
+
 @receiver(post_save, sender=Answer)
 def update_answer_count_on_save(sender, instance, created, **kwargs):
     if created:

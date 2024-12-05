@@ -4,6 +4,9 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import validate_email
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from versatileimagefield.fields import VersatileImageField
+from versatileimagefield.image_warmer import VersatileImageFieldWarmer
+
 from authentication.utils import generate_image_path
 
 
@@ -50,13 +53,20 @@ class User(AbstractUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(null=True, blank=True)
-    image = models.ImageField(upload_to=generate_image_path, null=True, blank=True)
+    image = VersatileImageField(upload_to=generate_image_path, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     score = models.PositiveIntegerField(default=0)
     total_answers = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.user.email
+
+
+@receiver(post_save, sender=Profile)
+def warm_profile_image(sender, instance, **kwargs):
+    if instance.image:
+        VersatileImageFieldWarmer(instance_or_queryset=instance, rendition_key_set='profile_image', image_attr='image',
+                                  verbose=True).warm()
 
 
 @receiver(post_save, sender=User)
