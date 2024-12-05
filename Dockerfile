@@ -1,12 +1,20 @@
-FROM ubuntu:latest
+FROM continuumio/miniconda3
 LABEL authors="giorgi"
+
+RUN apt-get update \
+    && apt-get install -y libmagic1 && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/services/djangoapp/src
 
-COPY ./requirements.txt ./requirements.txt
+WORKDIR /opt/services/djangoapp/src
 
-RUN pip install -r requirements.txt
+COPY ./requirements.txt /opt/services/djangoapp/src/requirements.txt
 
-COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install gunicorn
+
+COPY . /opt/services/djangoapp/src/
 
 EXPOSE 8000

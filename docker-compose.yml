@@ -1,5 +1,24 @@
 services:
-  db:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stay_connected_django
+    volumes:
+      - django_static_files:/opt/services/djangoapp/src/static
+      - django_media_files:/opt/services/djangoapp/src/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres_db
+      - redis
+    restart: always
+    command: /opt/services/djangoapp/src/start-bash.sh
+
+
+  postgres_db:
     container_name: stay_connected_db
     image: postgres:17.2-bullseye
     volumes:
@@ -14,7 +33,7 @@ services:
     healthcheck:
       test:
         [ "CMD", "pg_isready", "-q", "-d", "quiz", "-U", "quiz" ]
-      timeout: 45s
+      timeout: 60s
       interval: 10s
       retries: 10
 
@@ -26,3 +45,5 @@ services:
 
 volumes:
   postgres_data:
+  django_static_files:
+  django_media_files:
