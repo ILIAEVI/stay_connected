@@ -63,7 +63,7 @@ class AnswerVoteSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user = self.context['request'].user
-        answer = self.context['answer']
+        answer = attrs.get('answer')
 
         try:
             answer = Answer.objects.get(id=answer.id)
@@ -75,7 +75,7 @@ class AnswerVoteSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_vote_type(self, value):
-        if value not in [AnswerVote.VoteChoices.LIKE, AnswerVote.VoteChoices.DISLIKE, AnswerVote.VoteChoices.NONE]:
+        if value not in [AnswerVote.VoteChoices.LIKE, AnswerVote.VoteChoices.DISLIKE]:
             raise serializers.ValidationError("Invalid vote type.")
         return value
 
