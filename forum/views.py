@@ -30,7 +30,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
     filterset_class = AnswerFilter
 
     def perform_create(self, serializer):
-        post_pk = self.kwargs.get('po   st_pk')
+        post_pk = self.kwargs.get('post_pk')
         try:
             post = Post.objects.get(pk=post_pk)
         except Post.DoesNotExist:
@@ -89,6 +89,3 @@ class AnswerViewSet(viewsets.ModelViewSet):
         else:
             AnswerVote.objects.create(answer=answer, user=user, vote_type=vote_type)
             return Response({"detail": "Vote added"}, status=status.HTTP_201_CREATED)
-
-
-
