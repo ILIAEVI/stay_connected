@@ -23,6 +23,17 @@ class ProfileView(mixins.RetrieveModelMixin,
     permission_classes = [IsProfileOwnerOrReadOnly]
 
 
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    queryset = Profile.objects.all().select_related('user')
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsProfileOwnerOrReadOnly]
+
+    def get_object(self):
+        return Profile.objects.get(user=self.request.user)
+
+
+
 class LeaderboardView(mixins.ListModelMixin, GenericViewSet):
     serializer_class = LeaderBoardSerializer
 

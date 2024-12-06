@@ -31,18 +31,24 @@ class Answer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def total_likes(self):
+        return self.votes.filter(vote_type=AnswerVote.VoteChoices.LIKE).count()
 
-class Like(models.Model):
-    LIKE = 1
-    DISLIKE = -1
+    @property
+    def total_dislikes(self):
+        return self.votes.filter(vote_type=AnswerVote.VoteChoices.DISLIKE).count()
 
-    class Value(models.TextChoices):
-        LIKE = 'like', 'Like'
-        DISLIKE = 'dislike', 'Dislike'
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes_dislikes')
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='likes_dislikes')
-    value = models.CharField(max_length=7, choices=Value.choices)
+class AnswerVote(models.Model):
+
+    class VoteChoices(models.IntegerChoices):
+        LIKE = 1, 'Like'
+        DISLIKE = -1, 'Dislike'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answer_votes')
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='votes')
+    vote_type = models.SmallIntegerField(choices=VoteChoices.choices)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

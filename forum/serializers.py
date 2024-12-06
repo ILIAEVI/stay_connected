@@ -1,6 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
-from forum.models import Post, Answer, Tag, Like
+from forum.models import Post, Answer, Tag, AnswerVote
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -56,21 +56,36 @@ class PostSerializer(serializers.ModelSerializer):
         instance.tags.set(all_tags)
 
 
-class AnswerLikeDislikeSerializer(serializers.ModelSerializer):
+class AnswerVoteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Like
-        fields = ['user', 'answer', 'value']
-        extra_kwargs = {
-            'user': {'read_only': True},
-            'answer': {'read_only': True},
-        }
+        model = AnswerVote
+        fields = ['answer', 'vote_type']
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        answer = self.context['answer']
+
+        try:
+            answer = Answer.objects.get(id=answer.id)
+        except Answer.DoesNotExist:
+            raise serializers.ValidationError('Answer does not exist')
+
+        if AnswerVote.objects.filter(user=user, answer=answer).exists():
+            raise serializers.ValidationError("You have already voted on this answer.")
+        return attrs
+
+    def validate_vote_type(self, value):
+        if value not in [AnswerVote.VoteChoices.LIKE, AnswerVote.VoteChoices.DISLIKE, AnswerVote.VoteChoices.NONE]:
+            raise serializers.ValidationError("Invalid vote type.")
+        return value
 
 
 class AnswerSerializer(serializers.ModelSerializer):
-
+    total_likes = serializers.IntegerField(source='total_likes', read_only=True)
+    total_dislikes = serializers.IntegerField(source='total_dislikes', read_only=True)
     class Meta:
         model = Answer
-        fields = ['id', 'user', 'body', 'created_at', 'is_accepted']
+        fields = ['id', 'user', 'body', 'created_at', 'is_accepted', 'total_likes', 'total_dislikes']
         extra_kwargs = {
             'user': {'read_only': True},
             'created_at': {'read_only': True},
@@ -78,13 +93,10 @@ class AnswerSerializer(serializers.ModelSerializer):
         }
 
 
-
-
 class AnswerMarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ['is_accepted']
-
 
     def validate(self, attrs):
         if attrs.get('is_accepted', False):
