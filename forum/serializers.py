@@ -81,11 +81,11 @@ class AnswerVoteSerializer(serializers.ModelSerializer):
 
 
 class AnswerSerializer(serializers.ModelSerializer):
-    total_likes = serializers.IntegerField(source='total_likes', read_only=True)
-    total_dislikes = serializers.IntegerField(source='total_dislikes', read_only=True)
+    likes = serializers.IntegerField(source='total_likes', read_only=True)
+    dislikes = serializers.IntegerField(source='total_dislikes', read_only=True)
     class Meta:
         model = Answer
-        fields = ['id', 'user', 'body', 'created_at', 'is_accepted', 'total_likes', 'total_dislikes']
+        fields = ['id', 'user', 'body', 'created_at', 'is_accepted', 'likes', 'dislikes']
         extra_kwargs = {
             'user': {'read_only': True},
             'created_at': {'read_only': True},
