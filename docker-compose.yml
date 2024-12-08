@@ -1,19 +1,20 @@
 services:
-  django:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: stay_connected_django
-    volumes:
-      - static_files:/home/djangoapp/src/static
-      - media_files:/home/djangoapp/src/media
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      - postgres_db
-      - redis
+#  django:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: stay_connected_django
+#    volumes:
+#      - static_files:/home/djangoapp/src/static
+#      - media_files:/home/djangoapp/src/media
+#    ports:
+#      - "8000:8000"
+#    env_file:
+#      - .env
+#    depends_on:
+#      - postgres_db
+#      - redis
+#    command: sh -c "sleep 10 && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"
 
 
   postgres_db:
@@ -42,8 +43,34 @@ services:
       - "6379:6379"
 
 
+#  celery_worker:
+#    container_name: stay_connected_celery_worker
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - postgres_db
+#      - redis
+#    volumes:
+#      - .:/home/djangoapp/src
+#    command: celery -A stay_connected worker --loglevel=info
+#
+#  celery_beat:
+#    container_name: stay_connected_celery_beat
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    volumes:
+#      - .:/home/djangoapp/src
+#    depends_on:
+#      - redis
+#      - postgres_db
+#    command: celery -A stay_connected beat --loglevel=info
+
+
+
 volumes:
   postgres_data:
-  static_files:
-  media_files:
+  #static_files:
+  #media_files:
 
