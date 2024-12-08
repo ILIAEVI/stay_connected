@@ -10,6 +10,7 @@ router.register('leaderboard', views.LeaderboardView, basename='leaderboard')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('login/', views.LoginView.as_view(), name='login'),
     path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('refresh_token/', views.RefreshTokenView.as_view(), name='token_refresh'),
