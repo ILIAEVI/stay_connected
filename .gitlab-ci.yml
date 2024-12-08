@@ -14,7 +14,6 @@ setup-env-job:
   script:
     - echo "Setting up the .env file..."
     - ssh root@$APP_HOST "mkdir -p $APP_DIR"
-    - ssh root@$APP_HOST "cat <<EOF > $APP_DIR/.env
     - ssh root@$APP_HOST "echo 'SECRET_KEY=$SECRET_KEY' > $APP_DIR/.env"
     - ssh root@$APP_HOST "echo 'DB_NAME=$DB_NAME' >> $APP_DIR/.env"
     - ssh root@$APP_HOST "echo 'DB_USER=$DB_USER' >> $APP_DIR/.env"
