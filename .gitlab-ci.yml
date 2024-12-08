@@ -9,33 +9,16 @@ variables:
   APP_HOST: "164.92.200.148"
   APP_DIR: "/root/stay-connected-app/backend"
 
-setup-env-job:
-  stage: setup-env
-  script:
-    - echo "Setting up the .env file..."
-    - ssh root@$APP_HOST "mkdir -p $APP_DIR"
-    - ssh root@$APP_HOST "echo 'SECRET_KEY=$SECRET_KEY' > $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'DB_NAME=$DB_NAME' >> $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'DB_USER=$DB_USER' >> $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'DB_PASSWORD=$DB_PASSWORD' >> $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'DB_HOST=$DB_HOST' >> $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'DB_PORT=$DB_PORT' >> $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'EMAIL_HOST_USER=$EMAIL_HOST_USER' >> $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD' >> $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'REDIS_HOST=$REDIS_HOST' >> $APP_DIR/.env"
-    - ssh root@$APP_HOST "echo 'REDIS_PORT=$REDIS_PORT' >> $APP_DIR/.env"
-  tags:
-    - staging
-    - backend
-
 staging-build-job:
   stage: build
   script:
-    - echo "Building Docker image on the host..."
+    - echo "Building Docker Compose on the host..."
+    - ssh root@$APP_HOST "mkdir -p $APP_DIR"
     - scp -r * root@$APP_HOST:$APP_DIR
+    - ssh root@$APP_HOST "cat env.txt > $APP_DIR/.env"
     - if [ -f .env ]; then scp .env root@$APP_HOST:$APP_DIR; else echo ".env file not found"; fi
-    - echo "Running docker-compose build..."
     - ssh root@$APP_HOST "cd $APP_DIR && docker-compose build"
+
   tags:
     - staging
     - backend
