@@ -17,8 +17,6 @@ COPY . /home/djangoapp/src/
 
 RUN python3 manage.py collectstatic --noinput
 
-RUN python3 manage.py flush
-
 EXPOSE 8000
 
 #CMD ["sh", "-c", "python3 manage.py migrate && gunicorn stay_connected.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
