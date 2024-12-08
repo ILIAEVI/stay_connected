@@ -16,7 +16,7 @@ services:
       - redis
       - celery_worker
       - celery_beat
-    command: sh -c "sleep 10 && python3 manage.py migrate && gunicorn stay_connected.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    command: sh -c "sleep 15 && python3 manage.py makemigrations && python3 manage.py migrate && gunicorn stay_connected.wsgi:application --bind 0.0.0.0:8000 --workers 3"
 
   postgres_db:
     container_name: stay_connected_db
