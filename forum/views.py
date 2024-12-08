@@ -1,5 +1,3 @@
-from lib2to3.fixes.fix_input import context
-
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action

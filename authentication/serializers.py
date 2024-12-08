@@ -25,6 +25,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'score': {'read_only': True},
             'total_answers': {'read_only': True},
+            'email': {'read_only': True},
+            'first_name': {'read_only': True},
+            'last_name': {'read_only': True},
         }
 
 

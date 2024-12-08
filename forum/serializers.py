@@ -1,5 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
+
+from authentication.models import User
 from forum.models import Post, Answer, Tag, AnswerVote
 
 
@@ -9,16 +11,32 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name']
+        extra_kwargs = {
+            'first_name': {'read_only': True},
+            'last_name': {'read_only': True},
+        }
+
+
 class PostSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
+    user = UserDetailSerializer(read_only=True)
+    answer_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'user', 'tags', 'subject', 'body', 'created_at']
+        fields = ['id', 'user', 'tags', 'subject', 'body', 'created_at', 'answer_count']
         extra_kwargs = {
             'created_at': {'read_only': True},
             'user': {'read_only': True},
         }
+
+    @staticmethod
+    def get_answer_count(obj):
+        return obj.answers.count()
 
     @transaction.atomic
     def create(self, validated_data):
@@ -70,19 +88,13 @@ class AnswerVoteSerializer(serializers.ModelSerializer):
         except Answer.DoesNotExist:
             raise serializers.ValidationError('Answer does not exist')
 
-        if AnswerVote.objects.filter(user=user, answer=answer).exists():
-            raise serializers.ValidationError("You have already voted on this answer.")
         return attrs
-
-    def validate_vote_type(self, value):
-        if value not in [AnswerVote.VoteChoices.LIKE, AnswerVote.VoteChoices.DISLIKE]:
-            raise serializers.ValidationError("Invalid vote type.")
-        return value
 
 
 class AnswerSerializer(serializers.ModelSerializer):
     likes = serializers.IntegerField(source='total_likes', read_only=True)
     dislikes = serializers.IntegerField(source='total_dislikes', read_only=True)
+
     class Meta:
         model = Answer
         fields = ['id', 'user', 'body', 'created_at', 'is_accepted', 'likes', 'dislikes']
