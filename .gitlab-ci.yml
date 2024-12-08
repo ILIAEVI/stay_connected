@@ -1,4 +1,5 @@
 stages:
+  - setup-env
   - build
   - deploy
 
@@ -7,12 +8,34 @@ variables:
   DJANGO_APP_PORT: 8000
   APP_HOST: "164.92.200.148"
   APP_DIR: "/root/stay-connected-app/backend"
+  ENV_FILE: ".env"
+
+setup-env-job:
+  stage: setup-env
+  script:
+    - echo "Setting up the .env file..."
+    - ssh root@$APP_HOST "mkdir -p $APP_DIR"
+    - ssh root@$APP_HOST "cat <<EOF > $APP_DIR/.env
+    - ssh root@$APP_HOST "cat <<EOF > $APP_DIR/.env
+      SECRET_KEY=$SECRET_KEY
+      DB_NAME=$DB_NAME
+      DB_USER=$DB_USER
+      DB_PASSWORD=$DB_PASSWORD
+      DB_HOST=$DB_HOST
+      DB_PORT=$DB_PORT
+      EMAIL_HOST_USER=$EMAIL_HOST_USER
+      EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD
+      REDIS_HOST=$REDIS_HOST
+      REDIS_PORT=$REDIS_PORT
+      EOF"
+  tags:
+    - staging
+    - backend
 
 staging-build-job:
   stage: build
   script:
     - echo "Building Docker image on the host..."
-    - ssh root@$APP_HOST "mkdir -p $APP_DIR"
     - scp -r * root@$APP_HOST:$APP_DIR
     - if [ -f .env ]; then scp .env root@$APP_HOST:$APP_DIR; else echo ".env file not found"; fi
     - echo "Running docker-compose build..."
