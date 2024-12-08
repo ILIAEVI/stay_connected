@@ -28,12 +28,10 @@ class CanMarkAnswer(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         post__user = obj.post.user
 
-        """if request.user == post__user and obj.user != post__user:
+        if request.user == post__user and obj.user != post__user:
             return True
-        
-        return False"""
 
-        return request.user == post__user and obj.user != post__user and obj.user != request.user
+        return False
 
 
 class IsAuthenticatedOrReadOnly(permissions.BasePermission):

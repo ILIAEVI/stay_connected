@@ -11,7 +11,7 @@ from forum.serializers import PostSerializer, AnswerSerializer, AnswerMarkSerial
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().prefetch_related('tags').select_related('user')
+    queryset = Post.objects.all().prefetch_related('tags').select_related('user').order_by('-created_at')
     serializer_class = PostSerializer
     permission_classes = [IsPostOwnerOrReadOnly, IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
@@ -37,7 +37,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         post_pk = self.kwargs.get('post_pk')
-        return Answer.objects.filter(post_id=post_pk).select_related('post', 'user')
+        return Answer.objects.filter(post_id=post_pk).select_related('post', 'user').order_by('-is_accepted', '-created_at')
 
     @action(
         detail=True,
