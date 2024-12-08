@@ -15,8 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /home/djangoapp/src/
 
-RUN python3 manage.py flush --noinput
-
 RUN python3 manage.py collectstatic --noinput
 
 EXPOSE 8000
