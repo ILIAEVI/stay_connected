@@ -16,7 +16,7 @@ setup-env-job:
     - echo "Setting up the .env file..."
     - ssh root@$APP_HOST "mkdir -p $APP_DIR"
     - ssh root@$APP_HOST "cat <<EOF > $APP_DIR/.env
-    - ssh root@$APP_HOST "cat <<EOF > $APP_DIR/.env
+    - ssh root@$APP_HOST 'cat <<EOF > $APP_DIR/.env
       SECRET_KEY=$SECRET_KEY
       DB_NAME=$DB_NAME
       DB_USER=$DB_USER
@@ -27,7 +27,7 @@ setup-env-job:
       EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD
       REDIS_HOST=$REDIS_HOST
       REDIS_PORT=$REDIS_PORT
-      EOF"
+      EOF'
   tags:
     - staging
     - backend
