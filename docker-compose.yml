@@ -14,8 +14,8 @@ services:
     depends_on:
       - postgres_db
       - redis
-      - celery_worker
-      - celery_beat
+    #  - celery_worker
+    #  - celery_beat
     command: sh -c "sleep 15 && python3 manage.py makemigrations && python3 manage.py migrate && gunicorn stay_connected.wsgi:application --bind 0.0.0.0:8000 --workers 3"
 
   postgres_db:
