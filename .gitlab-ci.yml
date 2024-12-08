@@ -12,13 +12,17 @@ variables:
 staging-build-job:
   stage: build
   script:
-    - echo "Building Docker Compose on the host..."
+    - echo "Building Docker image on the host..."
     - ssh root@$APP_HOST "mkdir -p $APP_DIR"
-    - scp -r * root@$APP_HOST:$APP_DIR
-    # - ssh root@$APP_HOST "mv $APP_DIR/.env $APP_DIR/.env"
-    - if [ -f .env ]; then scp .env root@$APP_HOST:$APP_DIR; else echo ".env file not found"; fi
-    - ssh root@$APP_HOST "cd $APP_DIR && docker-compose build"
 
+    - ssh root@$APP_HOST 'echo -e "SECRET_KEY=$SECRET_KEY\nDB_NAME=$DB_NAME\nDB_USER=$DB_USER\nDB_PASSWORD=$DB_PASSWORD\nDB_HOST=$DB_HOST\nDB_PORT=$DB_PORT\nEMAIL_HOST_USER=$EMAIL_HOST_USER\nEMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD\nREDIS_HOST=$REDIS_HOST\nREDIS_PORT=$REDIS_PORT" > $APP_DIR/.env'
+ 
+
+    - scp -r * root@$APP_HOST:$APP_DIR
+    - if [ -f .env ]; then scp .env root@$APP_HOST:$APP_DIR; else echo ".env file not found"; fi
+    - echo "Running docker-compose build..."
+    - ssh root@$APP_HOST "cd $APP_DIR && docker-compose build"
+    
   tags:
     - staging
     - backend
