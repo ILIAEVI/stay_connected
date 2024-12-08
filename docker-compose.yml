@@ -14,8 +14,8 @@ services:
     depends_on:
       - postgres_db
       - redis
-    #  - celery_worker
-    #  - celery_beat
+      - celery_worker
+      - celery_beat
     command: sh -c "sleep 30 && python3 manage.py migrate && gunicorn stay_connected.wsgi:application --bind 0.0.0.0:8000 --workers 3"
 
   postgres_db:
@@ -43,29 +43,29 @@ services:
     ports:
       - "6379:6379"
 
-#  celery_worker:
-#    container_name: stay_connected_celery_worker
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - postgres_db
-#      - redis
-#    volumes:
-#      - .:/home/djangoapp/src
-#    command: celery -A stay_connected worker --loglevel=info
-#
-#  celery_beat:
-#    container_name: stay_connected_celery_beat
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    volumes:
-#      - .:/home/djangoapp/src
-#    depends_on:
-#      - redis
-#      - postgres_db
-#    command: celery -A stay_connected beat --loglevel=info
+  celery_worker:
+    container_name: stay_connected_celery_worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres_db
+      - redis
+    volumes:
+      - .:/home/djangoapp/src
+    command: celery -A stay_connected worker --loglevel=info
+
+  celery_beat:
+    container_name: stay_connected_celery_beat
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/home/djangoapp/src
+    depends_on:
+      - redis
+      - postgres_db
+    command: celery -A stay_connected beat --loglevel=info
 
 
 volumes:
