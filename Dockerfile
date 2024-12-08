@@ -13,8 +13,6 @@ COPY ./requirements.txt /home/djangoapp/src/requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install gunicorn
-
 COPY . /home/djangoapp/src/
 
 RUN python3 manage.py collectstatic --noinput
