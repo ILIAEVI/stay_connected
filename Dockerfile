@@ -19,5 +19,5 @@ RUN python3 manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-#CMD ["sh", "-c", "python3 manage.py migrate && gunicorn stay_connected.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
-CMD ["sh", "-c", "python3 manage.py migrate && python manage.py runserver"]
+CMD ["sh", "-c", "python3 manage.py migrate && gunicorn stay_connected.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
+#CMD ["sh", "-c", "python3 manage.py migrate && python manage.py runserver"]
