@@ -15,7 +15,7 @@ staging-build-job:
     - echo "Building Docker Compose on the host..."
     - ssh root@$APP_HOST "mkdir -p $APP_DIR"
     - scp -r * root@$APP_HOST:$APP_DIR
-    - ssh root@$APP_HOST "cat env.txt > $APP_DIR/.env"
+    - ssh root@$APP_HOST "mv $APP_DIR/env.txt $APP_DIR/.env"
     - if [ -f .env ]; then scp .env root@$APP_HOST:$APP_DIR; else echo ".env file not found"; fi
     - ssh root@$APP_HOST "cd $APP_DIR && docker-compose build"
 
