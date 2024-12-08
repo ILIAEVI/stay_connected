@@ -1,0 +1,33 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_IMAGE: stay-connected-backend
+  DJANGO_APP_PORT: 8000
+  APP_HOST: "164.92.200.148"
+  APP_DIR: "/root/stay-connected-app/backend"
+
+staging-build-job:
+  stage: build
+  script:
+    - echo "Building Docker image on the host..."
+    - ssh root@$APP_HOST "mkdir -p $APP_DIR"
+    - scp -r * root@$APP_HOST:$APP_DIR
+    - if [ -f .env ]; then scp .env root@$APP_HOST:$APP_DIR; else echo ".env file not found"; fi
+    - echo "Running docker-compose build..."
+    - ssh root@$APP_HOST "cd $APP_DIR && docker-compose build"
+  tags:
+    - staging
+    - backend
+
+staging-deploy-job:
+  stage: deploy
+  script:
+    - echo "Deploying the Django app on the host..."
+    - ssh root@$APP_HOST "cd $APP_DIR && docker-compose down || true"
+    - ssh root@$APP_HOST "cd $APP_DIR && docker-compose up -d"
+    - echo "Application deployed and running on http://$APP_HOST:$DJANGO_APP_PORT"
+  tags:
+    - staging
+    - backend

@@ -1,6 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
-from forum.models import Post, Answer, Tag, Like
+
+from authentication.models import User
+from forum.models import Post, Answer, Tag, AnswerVote
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -9,16 +11,32 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name']
+        extra_kwargs = {
+            'first_name': {'read_only': True},
+            'last_name': {'read_only': True},
+        }
+
+
 class PostSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
+    user = UserDetailSerializer(read_only=True)
+    answer_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'user', 'tags', 'subject', 'body', 'created_at']
+        fields = ['id', 'user', 'tags', 'subject', 'body', 'created_at', 'answer_count']
         extra_kwargs = {
             'created_at': {'read_only': True},
             'user': {'read_only': True},
         }
+
+    @staticmethod
+    def get_answer_count(obj):
+        return obj.answers.count()
 
     @transaction.atomic
     def create(self, validated_data):
@@ -56,21 +74,30 @@ class PostSerializer(serializers.ModelSerializer):
         instance.tags.set(all_tags)
 
 
-class AnswerLikeDislikeSerializer(serializers.ModelSerializer):
+class AnswerVoteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Like
-        fields = ['user', 'answer', 'value']
-        extra_kwargs = {
-            'user': {'read_only': True},
-            'answer': {'read_only': True},
-        }
+        model = AnswerVote
+        fields = ['answer', 'vote_type']
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        answer = attrs.get('answer')
+
+        try:
+            answer = Answer.objects.get(id=answer.id)
+        except Answer.DoesNotExist:
+            raise serializers.ValidationError('Answer does not exist')
+
+        return attrs
 
 
 class AnswerSerializer(serializers.ModelSerializer):
+    likes = serializers.IntegerField(source='total_likes', read_only=True)
+    dislikes = serializers.IntegerField(source='total_dislikes', read_only=True)
 
     class Meta:
         model = Answer
-        fields = ['id', 'user', 'body', 'created_at', 'is_accepted']
+        fields = ['id', 'user', 'body', 'created_at', 'is_accepted', 'likes', 'dislikes']
         extra_kwargs = {
             'user': {'read_only': True},
             'created_at': {'read_only': True},
@@ -78,13 +105,10 @@ class AnswerSerializer(serializers.ModelSerializer):
         }
 
 
-
-
 class AnswerMarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ['is_accepted']
-
 
     def validate(self, attrs):
         if attrs.get('is_accepted', False):

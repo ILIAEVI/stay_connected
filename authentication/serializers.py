@@ -15,14 +15,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(source='user.email')
+    email = serializers.EmailField(source='user.email', read_only=True)
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
 
     class Meta:
         model = Profile
-        fields = ['id', 'email', 'bio', 'image', 'score', 'total_answers']
+        fields = ['id', 'email', 'first_name', 'last_name', 'image', 'score', 'total_answers']
         extra_kwargs = {
             'score': {'read_only': True},
             'total_answers': {'read_only': True},
+            'email': {'read_only': True},
+            'first_name': {'read_only': True},
+            'last_name': {'read_only': True},
         }
 
 

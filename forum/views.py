@@ -2,11 +2,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from forum.filters import PostFilter, AnswerFilter
-from forum.models import Post, Answer
+from forum.models import Post, Answer, AnswerVote
 from forum.permissions import CanMarkAnswer, IsAnswerAuthorOrPostOwner, IsPostOwnerOrReadOnly, IsAuthenticatedOrReadOnly
-from forum.serializers import PostSerializer, AnswerSerializer, AnswerMarkSerializer, AnswerLikeDislikeSerializer
+from forum.serializers import PostSerializer, AnswerSerializer, AnswerMarkSerializer, AnswerVoteSerializer
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -60,22 +61,29 @@ class AnswerViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
-        detail=True,
-        methods=['POST'],
-        url_path='like-dislike_answer',
-        url_name='like-dislike_answer',
-        permission_classes=[permissions.IsAuthenticated],
-        serializer_class=AnswerLikeDislikeSerializer
+        detail=False,
+        methods=['PATCH'],
+        url_path='vote_answer',
+        url_name='vote-answer',
+        permission_classes=[IsAuthenticated],
+        serializer_class=AnswerVoteSerializer
     )
-    def like_dislike_answer(self, request, pk=None, post_pk=None):
-        try:
-            answer = Answer.objects.get(pk=pk)
-        except Answer.DoesNotExist:
-            raise ValidationError("Answer not found")
-
-        self.check_object_permissions(request, answer)
-
-        serializer = self.get_serializer(data=request.data)
+    def vote_answer(self, request, post_pk=None):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user, answer=answer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        answer = serializer.validated_data['answer']
+        vote_type = serializer.validated_data['vote_type']
+        user = request.user
+
+        existing_vote = AnswerVote.objects.filter(user=user, answer=answer).first()
+        if existing_vote:
+            if existing_vote.vote_type == vote_type:
+                existing_vote.delete()
+                return Response({"detail": "Vote removed"}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                existing_vote.vote_type = vote_type
+                existing_vote.save()
+                return Response({"detail": "Vote updated"}, status=status.HTTP_201_CREATED)
+        else:
+            AnswerVote.objects.create(answer=answer, user=user, vote_type=vote_type)
+            return Response({"detail": "Vote added"}, status=status.HTTP_201_CREATED)

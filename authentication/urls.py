@@ -12,6 +12,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('login/', views.LoginView.as_view(), name='login'),
+    path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('refresh_token/', views.RefreshTokenView.as_view(), name='token_refresh'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('signup/', views.SignupView.as_view(), name='signup'),
