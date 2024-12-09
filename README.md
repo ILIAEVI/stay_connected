@@ -45,13 +45,17 @@
 ### Answer Endpoints
 - `GET api/forum/posts/<post_id>/answers/`: List all answers for a post.
 - `POST api/forum/posts/<post_id>/answers/`: Add an answer to a post.
+- `PATCH api/forum/posts/<post_id>/answers/<id>/`: Update an answer (author only).
+- `DELETE api/forum/posts/<post_id>/answers/<id>/`: Delete an answer (author or post owner only).
 - `PATCH api/forum/posts/<post_id>/answers/<id>/mark-answer/`: Mark an answer as accepted.
 - `PATCH api/forum/posts/<post_id>/answers/vote_answer/`: Vote on an answer.
 
 
 ### User Endpoints
 - `POST api/auth/signup/`: Register a new user.
+- `GET api/auth/verify_email/<token>/`: Verify email after registration.
 - `POST api/auth/login/`: Authenticate and retrieve tokens.
+- `POST api/auth/refresh_token/`: Refresh JWT tokens.
 - `POST api/auth/logout/`: Logout and blacklist tokens.
 - `POST api/auth/password-reset/`: Request a password reset.
 - `POST api/auth/password-reset-confirm/`: Confirm a password reset.
